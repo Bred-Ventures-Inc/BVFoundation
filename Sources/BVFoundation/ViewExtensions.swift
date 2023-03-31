@@ -154,3 +154,15 @@ public extension Int {
         return String(self)
     }
 }
+
+public extension Image {
+    @ViewBuilder
+    func aspectFit(square: Double? = nil) -> some View {
+        if let square = square {
+            self.resizable().aspectRatio(contentMode: .fit).frame(square: square)
+        } else {
+            self.resizable().aspectRatio(contentMode: .fit)
+        }
+    }
+}
+

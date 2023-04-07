@@ -94,7 +94,7 @@ public extension HKWorkoutActivityType {
             
             // iOS 11
         case .taiChi:                       return "Tai Chi"
-        case .mixedCardio:                  return "Mixed Cardio"
+        case .mixedCardio:                  return "Cardio"
         case .handCycling:                  return "Hand Cycling"
             
             // iOS 13

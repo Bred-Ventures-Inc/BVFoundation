@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  HealthKitManager.swift
+//
 //
 //  Created by Krishnaprasad Jagadish on 11/07/22.
 //
@@ -178,27 +178,27 @@ public class HealthKitManager {
     
     // Get active calories for a range of dates
     public func getActiveMinutes(within interval: DateInterval) async throws -> Double {
-            return try await withUnsafeThrowingContinuation({ (continuation: UnsafeContinuation<Double, Error>) in
-                let query = HKActivitySummaryQuery(predicate: self.predicateForSummaryDates(within: interval)) { (query, summaries, error) -> Void in
-                    
-                    if let error = error {
-                        continuation.resume(throwing: error)
-                    }
-                    
-                    if let activitySummaries = summaries {
-                        var minutes = 0.0
-                        let exerciseUnit = HKUnit.minute()
-                        for summary in activitySummaries {
-                            minutes += summary.appleExerciseTime.doubleValue(for: exerciseUnit)
-                        }
-                        continuation.resume(with: .success(minutes))
-                    }  else {
-                        continuation.resume(with: .success(0)) // todo: see if this is needed
-                    }
+        return try await withUnsafeThrowingContinuation({ (continuation: UnsafeContinuation<Double, Error>) in
+            let query = HKActivitySummaryQuery(predicate: self.predicateForSummaryDates(within: interval)) { (query, summaries, error) -> Void in
+                
+                if let error = error {
+                    continuation.resume(throwing: error)
                 }
                 
-                self.myHealthStore.execute(query)
-            })
+                if let activitySummaries = summaries {
+                    var minutes = 0.0
+                    let exerciseUnit = HKUnit.minute()
+                    for summary in activitySummaries {
+                        minutes += summary.appleExerciseTime.doubleValue(for: exerciseUnit)
+                    }
+                    continuation.resume(with: .success(minutes))
+                }  else {
+                    continuation.resume(with: .success(0)) // todo: see if this is needed
+                }
+            }
+            
+            self.myHealthStore.execute(query)
+        })
     }
     
     //Get active calories for a specific date
@@ -313,24 +313,32 @@ public class HealthKitManager {
     public func listenForNewHealthWorkouts(processor: @escaping WorkoutProcessor) {
         myHealthStore.enableBackgroundDelivery(for: .workoutType(), frequency: .immediate) { (success, error) in
             if success {
-//                Log.d("[HealthKit Observer] Enabled BG Delivery")
+                //                Log.d("[HealthKit Observer] Enabled BG Delivery")
             } else {
                 Log.w("[HealthKit Observer] BG Delivery failed to enable!")
             }
             let workoutPredicate = HKQuery.predicateForWorkouts(with: .greaterThanOrEqualTo, duration: 60)
-            let observerQuery = HKObserverQuery(sampleType: .workoutType(), predicate: workoutPredicate) { [weak self] (query, completionHandler, error) in
-                if let error = error {
-                    Log.w("[HealthKit Observer] Error \(error)")
-                    return
-                }
-                guard let self = self else { return }
-                Log.d("Observer query triggered.")
+            let observerQuery = HKObserverQuery(sampleType: .workoutType(), predicate: workoutPredicate) { [weak self] (query, completion, error) in
+                guard let self = self else {return}
                 Task {
                     await self.runAnchoredQuery(processor: processor)
-                    completionHandler()
+                    completion()
                 }
             }
             self.myHealthStore.execute(observerQuery)
+        }
+    }
+    
+    public func listenForNewHealthUpdates(types: [(HKSampleType, HKUpdateFrequency)],
+                                          block: @escaping ()async->()) {
+        for (type, frequency) in types {
+            myHealthStore.enableBackgroundDelivery(for: type, frequency: frequency) { _,_ in }
+            myHealthStore.execute(HKObserverQuery(sampleType: type, predicate: nil) { (query, completion, error) in
+                Task {
+                    await block()
+                    completion()
+                }
+            })
         }
     }
     
@@ -340,7 +348,6 @@ public class HealthKitManager {
         var anchor: HKQueryAnchor?
         if let anchorSaved = userDefaults.value(forKey: ANCHOR_KEY) as? Data {
             anchor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: anchorSaved)
-//            Log.d("Using query anchor \(anchor ?? .init(fromValue: -1))")
         }
         let workoutPredicate = HKQuery.predicateForWorkouts(with: .greaterThanOrEqualTo, duration: 60)
         
@@ -350,20 +357,20 @@ public class HealthKitManager {
         let anchorData = try? NSKeyedArchiver.archivedData(withRootObject: result.newAnchor as Any, requiringSecureCoding: true)
         userDefaults.set(anchorData, forKey: ANCHOR_KEY)
         
-        if let newWorkout = result.addedSamples.first as? HKWorkout {
-            Log.d("Anchored query update found workout: \(newWorkout.uuid.uuidString) from \(newWorkout.startDate)")
-            guard await processor(newWorkout) else {
-                return /// Ignore already-processed workouts
+        let deletedWorkouts = result.deletedObjects
+        let addedWorkouts = result.addedSamples as? [HKWorkout] ?? []
+        let successfulAdditions = await addedWorkouts.asyncMap {
+            Log.d("Anchored query update found workout: \($0.uuid.uuidString) from \($0.startDate)")
+            return await processor($0)
+        }
+        Log.d("Added: \(successfulAdditions)")
+        Log.d("Deleted: \(deletedWorkouts)")
+        
+        if successfulAdditions.contains(where: {$0 == true}) || !deletedWorkouts.isEmpty {
+            Log.d("Notifying update!")
+            await MainActor.run {
+                NotificationCenter.default.post(.init(name: .init("WorkoutHistoryUpdate")))
             }
-        }
-        else if let deletedWorkout = result.deletedObjects.first {
-            Log.d("Anchored query found new deletion of a workout: \(deletedWorkout.uuid.uuidString)")
-        } else {
-//            Log.d("Anchored query initialized.")
-            return /// Ignore empty results.
-        }
-        await MainActor.run {
-            NotificationCenter.default.post(.init(name: .init("WorkoutHistoryUpdate")))
         }
     }
     

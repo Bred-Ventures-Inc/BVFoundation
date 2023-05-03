@@ -321,7 +321,11 @@ public class HealthKitManager {
             let observerQuery = HKObserverQuery(sampleType: .workoutType(), predicate: workoutPredicate) { [weak self] (query, completion, error) in
                 guard let self = self else {return}
                 Task {
-                    await self.runAnchoredQuery(processor: processor)
+                    let auth = try? await HKHealthStore()
+                        .statusForAuthorizationRequest(toShare: [], read: [.workoutType()])
+                    if auth == .unnecessary {
+                        await self.runAnchoredQuery(processor: processor)
+                    }
                     completion()
                 }
             }
@@ -335,7 +339,11 @@ public class HealthKitManager {
             myHealthStore.enableBackgroundDelivery(for: type, frequency: frequency) { _,_ in }
             myHealthStore.execute(HKObserverQuery(sampleType: type, predicate: nil) { (query, completion, error) in
                 Task {
-                    await block()
+                    let auth = try? await HKHealthStore()
+                        .statusForAuthorizationRequest(toShare: [], read: [type])
+                    if auth == .unnecessary {
+                        await block()
+                    }
                     completion()
                 }
             })

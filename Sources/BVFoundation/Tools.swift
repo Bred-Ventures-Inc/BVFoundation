@@ -25,3 +25,9 @@ public extension Sequence {
         return values
     }
 }
+
+public extension Task where Success == Never, Failure == Never {
+    static func wait(for seconds: TimeInterval) async {
+        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+    }
+}

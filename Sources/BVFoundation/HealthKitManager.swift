@@ -5,6 +5,7 @@
 //  Created by Krishnaprasad Jagadish on 11/07/22.
 //
 
+#if canImport(HealthKit)
 import Foundation
 #if os(iOS)
 import NotificationCenter
@@ -433,3 +434,5 @@ private struct DatePair: Hashable {
     let from: Date
     let to: Date
 }
+
+#endif

@@ -5,6 +5,7 @@
 //  Created by TealShift Schwifty on 7/12/22.
 //
 
+#if canImport(HealthKit)
 import HealthKit
 
 public extension HKWorkout {
@@ -307,6 +308,7 @@ public extension HKQuantitySample {
         return samples?.first
     }
 }
+#endif
 
 #if os(iOS)
 import UIKit

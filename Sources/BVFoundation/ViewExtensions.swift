@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import HealthKit
 
 public extension String {
     var toUIColor: UIColor {
@@ -57,6 +56,7 @@ public extension View {
     
     /// Binding sync shortcut to circumvent the new annoying Xcode 14 warning when `@Published` vars are bound to view states.
     /// This is the warning: "Publishing changes from within view updates is not allowed, this will cause undefined behaviour"
+    @available(tvOS 14.0, iOS 15.0, watchOS 8.0, *)
     func sync(_ published: Binding<Bool>, with binding: Binding<Bool>) -> some View {
         self.onChange(of: published.wrappedValue) { newValue in
             binding.wrappedValue = newValue

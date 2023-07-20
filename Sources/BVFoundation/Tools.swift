@@ -13,16 +13,12 @@ import Combine
 //    func update(_ value: Any?)
 //}
 
-public protocol SettingSyncDelegate {
-    func settingChanged(key: String)
-}
-
 @propertyWrapper public final class UserPref<T>: NSObject {
     private let key: String
     private let userDefaults: UserDefaults
     private var observerContext = 0
     private let subject: CurrentValueSubject<T, Never>
-    private let syncDelegate: SettingSyncDelegate?
+    private let syncBlock: (String)->()
 
     /// Initialize a key/value to track
     /// - Parameters:
@@ -31,11 +27,11 @@ public protocol SettingSyncDelegate {
     ///   - storage: UserDefaults containing value for preference
     ///   - sync: Delegate responsible for keeping this in sync with other platforms
     public init(wrappedValue defaultValue: T, _ key: String,
-         storage: UserDefaults = .standard, sync: SettingSyncDelegate? = nil) {
+                storage: UserDefaults = .standard, sync: @escaping (String)->() = {_ in }) {
         self.key = key
         self.subject = CurrentValueSubject(defaultValue)
         self.userDefaults = storage
-        self.syncDelegate = sync
+        self.syncBlock = sync
         super.init()
         userDefaults.register(defaults: [key: defaultValue])
         /// The publisher is only called when the value is updated
@@ -47,7 +43,7 @@ public protocol SettingSyncDelegate {
                                change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if context == &observerContext {
             subject.value = wrappedValue
-            syncDelegate?.settingChanged(key: key)
+            syncBlock(key)
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
@@ -74,7 +70,7 @@ public protocol SettingSyncDelegate {
     private let userDefaults: UserDefaults
     private var observerContext = 0
     private let subject: CurrentValueSubject<T?, Never>
-    private let syncDelegate: SettingSyncDelegate?
+    private let syncBlock: (String)->()
     
     /// Initialize a key/value to track
     /// - Parameters:
@@ -83,11 +79,11 @@ public protocol SettingSyncDelegate {
     ///   - storage: UserDefaults containing value for preference
     ///   - sync: Delegate responsible for keeping this in sync with other platforms
     public init(wrappedValue defaultValue: T? = nil, _ key: String,
-         storage: UserDefaults = .standard, sync: SettingSyncDelegate? = nil) {
+                storage: UserDefaults = .standard, sync: @escaping (String)->() = {_ in }) {
         self.key = key
         self.subject = CurrentValueSubject(defaultValue)
         self.userDefaults = storage
-        self.syncDelegate = sync
+        self.syncBlock = sync
         super.init()
         if let defaultValue = defaultValue {
             userDefaults.register(defaults: [key: defaultValue])
@@ -101,7 +97,7 @@ public protocol SettingSyncDelegate {
                                change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if context == &observerContext {
             subject.value = wrappedValue
-            syncDelegate?.settingChanged(key: key)
+            syncBlock(key)
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }

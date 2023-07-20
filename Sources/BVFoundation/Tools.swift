@@ -27,7 +27,7 @@ import Combine
     ///   - storage: UserDefaults containing value for preference
     ///   - sync: Delegate responsible for keeping this in sync with other platforms
     public init(wrappedValue defaultValue: T, _ key: String,
-                storage: UserDefaults = .standard, sync: @escaping (String)->() = {_ in }) {
+                storage: UserDefaults = .standard, _ sync: @escaping (String)->() = {_ in }) {
         self.key = key
         self.subject = CurrentValueSubject(defaultValue)
         self.userDefaults = storage
@@ -79,7 +79,7 @@ import Combine
     ///   - storage: UserDefaults containing value for preference
     ///   - sync: Delegate responsible for keeping this in sync with other platforms
     public init(wrappedValue defaultValue: T? = nil, _ key: String,
-                storage: UserDefaults = .standard, sync: @escaping (String)->() = {_ in }) {
+                storage: UserDefaults = .standard, _ sync: @escaping (String)->() = {_ in }) {
         self.key = key
         self.subject = CurrentValueSubject(defaultValue)
         self.userDefaults = storage

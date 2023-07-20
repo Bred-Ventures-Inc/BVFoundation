@@ -13,11 +13,11 @@ import Combine
 //    func update(_ value: Any?)
 //}
 
-protocol SettingSyncDelegate {
+public protocol SettingSyncDelegate {
     func settingChanged(key: String)
 }
 
-@propertyWrapper final class UserPref<T>: NSObject {
+@propertyWrapper public final class UserPref<T>: NSObject {
     private let key: String
     private let userDefaults: UserDefaults
     private var observerContext = 0
@@ -30,7 +30,7 @@ protocol SettingSyncDelegate {
     ///   - key: Preference key to track
     ///   - storage: UserDefaults containing value for preference
     ///   - sync: Delegate responsible for keeping this in sync with other platforms
-    init(wrappedValue defaultValue: T, _ key: String,
+    public init(wrappedValue defaultValue: T, _ key: String,
          storage: UserDefaults = .standard, sync: SettingSyncDelegate? = nil) {
         self.key = key
         self.subject = CurrentValueSubject(defaultValue)
@@ -43,7 +43,7 @@ protocol SettingSyncDelegate {
         subject.value = wrappedValue
     }
 
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?,
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if context == &observerContext {
             subject.value = wrappedValue
@@ -53,14 +53,14 @@ protocol SettingSyncDelegate {
         }
     }
     
-    var wrappedValue: T {
+    public var wrappedValue: T {
         get { userDefaults.object(forKey: key) as? T ?? subject.value }
         set {
             Log.v("Set \(key) -> \(newValue)")
             userDefaults.setValue(newValue, forKey: key)
         }
     }
-    var projectedValue: AnyPublisher<T, Never> {
+    public var projectedValue: AnyPublisher<T, Never> {
         subject.eraseToAnyPublisher()
     }
 
@@ -69,7 +69,7 @@ protocol SettingSyncDelegate {
     }
 }
 
-@propertyWrapper final class UserPrefOptional<T>: NSObject {
+@propertyWrapper public final class UserPrefOptional<T>: NSObject {
     private var key: String
     private let userDefaults: UserDefaults
     private var observerContext = 0
@@ -82,7 +82,7 @@ protocol SettingSyncDelegate {
     ///   - key: Preference key to track
     ///   - storage: UserDefaults containing value for preference
     ///   - sync: Delegate responsible for keeping this in sync with other platforms
-    init(wrappedValue defaultValue: T? = nil, _ key: String,
+    public init(wrappedValue defaultValue: T? = nil, _ key: String,
          storage: UserDefaults = .standard, sync: SettingSyncDelegate? = nil) {
         self.key = key
         self.subject = CurrentValueSubject(defaultValue)
@@ -97,7 +97,7 @@ protocol SettingSyncDelegate {
         subject.value = wrappedValue
     }
 
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?,
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if context == &observerContext {
             subject.value = wrappedValue
@@ -107,14 +107,14 @@ protocol SettingSyncDelegate {
         }
     }
     
-    var wrappedValue: T? {
+    public var wrappedValue: T? {
         get { userDefaults.object(forKey: key) as? T }
         set {
             Log.v("Set \(key) -> \(String(describing: newValue))")
             userDefaults.setValue(newValue, forKey: key)
         }
     }
-    var projectedValue: AnyPublisher<T?, Never> {
+    public var projectedValue: AnyPublisher<T?, Never> {
         subject.eraseToAnyPublisher()
     }
 

@@ -372,8 +372,12 @@ public class HealthKitManager {
             Log.d("Anchored query update found workout: \($0.uuid.uuidString) from \($0.startDate)")
             return await processor($0)
         }
-        Log.d("Added: \(successfulAdditions)")
-        Log.d("Deleted: \(deletedWorkouts)")
+//        if !successfulAdditions.isEmpty {
+//            Log.d("Added: \(successfulAdditions)")
+//        }
+//        if !deletedWorkouts.isEmpty {
+//            Log.d("Deleted: \(deletedWorkouts)")
+//        }
         
         if successfulAdditions.contains(where: {$0 == true}) || !deletedWorkouts.isEmpty {
             Log.d("Notifying update!")

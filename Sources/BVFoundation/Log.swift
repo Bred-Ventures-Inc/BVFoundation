@@ -7,7 +7,7 @@
 //
 
 import Foundation
-//import CocoaLumberjackSwift
+import CocoaLumberjackSwift
 //#if os(watchOS)
 //import Mixpanel
 //#endif
@@ -30,41 +30,122 @@ public enum LogEvent {
 
  */
 
-public extension LogEvent {
+private extension DDLogFlag {
     var emoji: String {
         switch self {
-            case .d: return "🔨"
-            case .e: return "❌"
-            case .i: return "ℹ️"
-            case .v: return "💬"
-            case .w: return "⚠️"
+        case .debug: return "🔨"
+        case .error: return "❌"
+        case .info: return "ℹ️"
+        case .verbose: return "💬"
+        case .warning: return "⚠️"
+        default: return ""
         }
     }
 }
 
+//public extension LogEvent {
+//    var emoji: String {
+//        switch self {
+//            case .d: return "🔨"
+//            case .e: return "❌"
+//            case .i: return "ℹ️"
+//            case .v: return "💬"
+//            case .w: return "⚠️"
+//        }
+//    }
+//}
+
+private class FileLogFormatter: NSObject, DDLogFormatter {
+    func format(message logMessage: DDLogMessage) -> String? {
+        let fileName = (logMessage.fileName as NSString).deletingPathExtension
+        return "\(logMessage.timestamp.longDateFormat) [\(fileName)] \(logMessage.flag.emoji) \(logMessage.message)"
+    }
+}
+
+private struct ConsoleLogFormatter {
+    static func format(message logMessage: DDLogMessage) -> String {
+        let fileName = (logMessage.fileName as NSString).deletingPathExtension
+        return "\(logMessage.timestamp.longTimeFormat) [\(fileName)] \(logMessage.flag.emoji) \(logMessage.message)"
+    }
+}
+
+private class ConsoleLogger: DDOSLogger, @unchecked Sendable {
+    
+    static let formatter:ConsoleLogFormatter = ConsoleLogFormatter()
+
+    override func log(message logMessage: DDLogMessage) {
+       let message = (ConsoleLogFormatter.format(message: logMessage))
+        
+        print("\(message)")
+    }
+}
+
 public final class Log {
-    public static func consolePrint(_ message: String, event: LogEvent) {
-        print("\(Date().longTimeFormat): \(event.emoji) \(message)")
+//    public static func consolePrint(_ message: String, event: LogEvent) {
+//        print("\(Date().longTimeFormat): \(event.emoji) \(message)")
+//    }
+    
+    private static let fileLogger: DDFileLogger = {
+        let fileLogger = DDFileLogger()
+        fileLogger.rollingFrequency = 60 * 60 * 24 // 24 hours
+        fileLogger.logFileManager.maximumNumberOfLogFiles = 3
+        fileLogger.logFormatter = FileLogFormatter()
+        return fileLogger
+    }()
+    
+    private static let consoleLogger: ConsoleLogger = {
+        let consoleLogger = ConsoleLogger()
+        return consoleLogger
+    }()
+
+    public static func startLog()  {
+        DDLog.add(consoleLogger)
+        DDLog.add(fileLogger)
+    }
+
+
+    static var filePath:[String]?{
+        return Log.fileLogger.logFileManager.sortedLogFilePaths
     }
     
-    public static func w(_ message: String) {
-        consolePrint(message, event: .w)
-    }
-
-    public static func d(_ message: String) {
-        consolePrint(message, event: .d)
-    }
-
-    public static func i(_ message: String) {
-        consolePrint(message, event: .i)
-    }
-
-    public static func v(_ message: String) {
-        consolePrint(message, event: .v)
+    private static func log(message:String, event:LogEvent, fileName: StaticString ){
+        switch event {
+            case .d:
+                DDLogDebug("\(message)",file:fileName)
+            case .e:
+                DDLogError("\(message)",file:fileName)
+            case .i:
+                DDLogInfo("\(message)",file:fileName)
+            case .v:
+                DDLogVerbose("\(message)",file:fileName)
+            case .w:
+                DDLogWarn("\(message)",file:fileName)
+        }
     }
     
-    public static func e(_ message: String) {
-        consolePrint(message, event: .e)
+    public static func w(_ message: String, fileName: StaticString = #file) {
+//        consolePrint(message, event: .w)
+        log(message: message, event: .w, fileName: fileName)
+    }
+
+    public static func d(_ message: String, fileName: StaticString = #file) {
+//        consolePrint(message, event: .d)
+        log(message: message, event: .d, fileName: fileName)
+    }
+
+    public static func i(_ message: String, fileName: StaticString = #file) {
+//        consolePrint(message, event: .i)
+        log(message: message, event: .i, fileName: fileName)
+    }
+
+    public static func v(_ message: String, fileName: StaticString = #file) {
+//        consolePrint(message, event: .v)
+        log(message: message, event: .v, fileName: fileName)
+    }
+    
+    public static func e(_ message: String, fileName: StaticString = #file) {
+//        consolePrint(message, event: .e)
+        log(message: message, event: .e, fileName: fileName)
     }
 
 //    class private func logError(message: String,

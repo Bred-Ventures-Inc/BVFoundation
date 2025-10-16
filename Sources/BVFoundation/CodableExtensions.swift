@@ -7,12 +7,12 @@
 
 import Foundation
 
-extension Encodable {
+public extension Encodable {
     var jsonData: Data? {
         try? JSONEncoder().encode(self)
     }
 }
-extension Decodable {
+public extension Decodable {
     static func jsonDecode(from jsonData: Data, failQuietly: Bool = false) -> Self? {
         do {
             return try JSONDecoder.init().decode(Self.self, from: jsonData)

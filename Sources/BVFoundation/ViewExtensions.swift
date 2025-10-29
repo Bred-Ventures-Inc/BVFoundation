@@ -116,8 +116,8 @@ public extension GeometryProxy {
 }
 
 public extension Int {
-    func counting(_ thing: String) -> String {
-        "\(self) \(thing)\(self == 1 ? "" : "s")"
+    func counting(_ thing: String, pluralSuffix: String = "s") -> String {
+        "\(self) \(thing)\(self == 1 ? "" : pluralSuffix)"
     }
 }
 

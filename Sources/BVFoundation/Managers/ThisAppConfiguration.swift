@@ -51,6 +51,18 @@ public struct ThisApp {
         let buildNum = Bundle.main.buildVersionNumber ?? "-"
         return "\(versionNum) (\(buildNum))"
     }
+    
+    /// Get this app's display name from the main bundle plist
+    public static var displayName: String? {
+        /// Prefer CFBundleDisplayName, fall back to CFBundleName
+        if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, !displayName.isEmpty {
+            return displayName
+        }
+        if let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String, !name.isEmpty {
+            return name
+        }
+        return nil
+    }
 }
 
 private extension Bundle {

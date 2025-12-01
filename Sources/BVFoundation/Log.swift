@@ -204,3 +204,40 @@ extension Date {
     }
     
 }
+
+import Zip
+extension Log {
+    static func getLogData() -> (URL?, String){
+        var zipFilePath: URL?
+
+        let paths = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)
+        let logFolderPath = paths[0].appendingPathComponent("Caches/Logs")
+        let fileName = "Logs"
+        
+        do {
+            zipFilePath = try Zip.quickZipFiles([logFolderPath], fileName: fileName)
+            Log.d("Successfully fetched data from the zipped log files")
+        }
+        catch(let err){
+            Log.e("Error in zipping files \(err)")
+        }
+        return (zipFilePath, fileName)
+    }
+}
+
+import SwiftUI
+@available(iOS 16.0, *)
+struct LogDataLink: Transferable {
+    enum ShareError: Error {
+        case failed
+    }
+    
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .zip) { sharedFile in
+            // Read data from the local file
+            let (path, _) = Log.getLogData()
+            guard let path else { throw ShareError.failed }
+            return SentTransferredFile(path)
+        }
+    }
+}

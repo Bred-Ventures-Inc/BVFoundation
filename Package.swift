@@ -19,6 +19,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
          .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack", from: "3.9.0"),
+         .package(url: "https://github.com/marmelroy/Zip.git", from: "2.1.2")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -27,7 +28,8 @@ let package = Package(
             name: "BVFoundation",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                .product(name: "CocoaLumberjack", package: "CocoaLumberjack")
+                .product(name: "CocoaLumberjack", package: "CocoaLumberjack"),
+                .product(name: "Zip", package: "zip")
             ],
             path: "Sources",
             resources: [

@@ -207,7 +207,7 @@ extension Date {
 
 import Zip
 extension Log {
-    static func getLogData() -> (URL?, String){
+    public static func getLogData() -> (URL?, String){
         var zipFilePath: URL?
 
         let paths = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)
@@ -227,12 +227,12 @@ extension Log {
 
 import SwiftUI
 @available(iOS 16.0, *)
-struct LogDataLink: Transferable {
+public struct LogDataLink: Transferable {
     enum ShareError: Error {
         case failed
     }
     
-    static var transferRepresentation: some TransferRepresentation {
+    public static var transferRepresentation: some TransferRepresentation {
         FileRepresentation(exportedContentType: .zip) { sharedFile in
             // Read data from the local file
             let (path, _) = Log.getLogData()

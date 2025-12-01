@@ -228,6 +228,15 @@ extension Log {
 import SwiftUI
 @available(iOS 16.0, *)
 public struct LogDataLink: Transferable {
+    public let logURL: URL  // Example property; replace with your actual ones
+    public let title: String  // Example; add more as needed
+    
+    // Custom public initializer for clients
+    public init(logURL: URL, title: String = "Log Data") {
+        self.logURL = logURL
+        self.title = title
+    }
+    
     enum ShareError: Error {
         case failed
     }

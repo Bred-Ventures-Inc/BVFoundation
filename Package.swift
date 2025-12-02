@@ -8,7 +8,8 @@ let package = Package(
     platforms: [
         .iOS(.v15),
         .tvOS(.v13),
-        .watchOS(.v8)
+        .watchOS(.v8),
+        .macOS(.v12)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -29,7 +30,7 @@ let package = Package(
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 .product(name: "CocoaLumberjack", package: "CocoaLumberjack"),
-                .product(name: "Zip", package: "zip")
+                .product(name: "Zip", package: "Zip")
             ],
             path: "Sources",
             resources: [
@@ -40,3 +41,4 @@ let package = Package(
             dependencies: ["BVFoundation"]),
     ]
 )
+

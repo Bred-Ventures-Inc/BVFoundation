@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import UIKit
 
 public extension String {
     var toUIColor: UIColor {

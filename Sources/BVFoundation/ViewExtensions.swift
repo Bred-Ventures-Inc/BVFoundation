@@ -7,8 +7,9 @@
 
 import Foundation
 import SwiftUI
-import UIKit
 
+#if canImport(UIKit)
+import UIKit
 public extension String {
     var toUIColor: UIColor {
         guard self.count == 6 else { return .white }
@@ -21,6 +22,7 @@ public extension String {
         return UIColor(red: r, green: g, blue: b, alpha: 1)
     }
 }
+#endif
 
 extension Binding {
     /// When the `Binding`'s `wrappedValue` changes, the given closure is executed.

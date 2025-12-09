@@ -8,12 +8,12 @@
 import Foundation
 
 public extension Encodable {
-    var jsonData: Data? {
+    nonisolated var jsonData: Data? {
         try? JSONEncoder().encode(self)
     }
 }
 public extension Decodable {
-    static func jsonDecode(from jsonData: Data, failQuietly: Bool = false) -> Self? {
+    nonisolated static func jsonDecode(from jsonData: Data, failQuietly: Bool = false) -> Self? {
         do {
             return try JSONDecoder.init().decode(Self.self, from: jsonData)
         } catch {

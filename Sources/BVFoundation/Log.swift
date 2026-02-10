@@ -166,6 +166,17 @@ public final class Log {
 //    }
 }
 
+public extension Log {
+    static func allFontNames() {
+        for family in UIFont.familyNames {
+            Log.d("FONT:" + family)
+            for names in UIFont.fontNames(forFamilyName: family) {
+                Log.d("== \(names)")
+            }
+        }
+    }
+}
+
 extension Date {
     static var longDateFormatter:DateFormatter = {
         let formatter = DateFormatter()

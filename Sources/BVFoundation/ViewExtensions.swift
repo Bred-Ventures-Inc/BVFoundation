@@ -116,6 +116,10 @@ public extension GeometryProxy {
     var aspectRatio: Double {
         size.width / size.height
     }
+    /// Center point
+    var center: CGPoint {
+        CGPoint(x: size.width/2, y: size.height/2)
+    }
 }
 
 public extension Int {

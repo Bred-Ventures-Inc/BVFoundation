@@ -27,8 +27,17 @@ public extension Sequence {
 }
 
 public extension Task where Success == Never, Failure == Never {
-    static func wait(seconds: TimeInterval) async {
-        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+    /// Returns false upon cancellation. This makes it convenient to guard against cancelled tasks after waiting.
+    @discardableResult
+    static func wait(seconds: TimeInterval) async -> Bool {
+        do {
+            try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            return true
+        } catch is CancellationError {
+            return false
+        } catch {
+            return false
+        }
     }
 }
 

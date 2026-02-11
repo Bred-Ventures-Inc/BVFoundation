@@ -7,7 +7,7 @@ let package = Package(
     name: "BVFoundation",
     platforms: [
         .iOS(.v15),
-        .tvOS(.v13),
+        .tvOS(.v16),
         .watchOS(.v8),
         .macOS(.v13)
     ],

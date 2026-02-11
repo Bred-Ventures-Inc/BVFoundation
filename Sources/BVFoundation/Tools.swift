@@ -49,6 +49,6 @@ public struct Timing {
     }
     @available(iOS 16.0, *)
     public static func wait(seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
+        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 }

@@ -237,7 +237,7 @@ extension Log {
 }
 
 import SwiftUI
-@available(iOS 16.0, *)
+@available(watchOS 9.0, iOS 16.0, *)
 public struct LogDataLink: Transferable {
     // Public initializer for clients
     public init() {}

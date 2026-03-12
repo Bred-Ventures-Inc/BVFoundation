@@ -19,7 +19,7 @@ public extension UserDefaultsKey where Self: RawRepresentable, RawValue == Strin
 }
 
 @propertyWrapper
-final class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
+public class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
     
     private let setting: Key
     private let defaultValue: T
@@ -50,7 +50,7 @@ final class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
         subject.value = wrappedValue
     }
     
-    var wrappedValue: T {
+    public var wrappedValue: T {
         get { // Read directly using the userDefaults instance
             guard let data = userDefaults.data(forKey: key) else { return defaultValue }
             let value = T.jsonDecode(from: data)
@@ -61,11 +61,11 @@ final class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
         }
     }
     
-    var projectedValue: AnyPublisher<T, Never> {
+    public var projectedValue: AnyPublisher<T, Never> {
         subject.eraseToAnyPublisher()
     }
 
-    override func observeValue(forKeyPath keyPath: String?,
+    public override func observeValue(forKeyPath keyPath: String?,
                                of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?,
                                context: UnsafeMutableRawPointer?) {

@@ -18,7 +18,7 @@ import Combine
 /// The app designated as the primary may keep this default value. Other apps under the same team seeking shared access should then copy the bundle ID of the primary to replace `$(CFBundleIdentifier)` in order to match the primary's value.
 /// Storage capacity is 1MB, independent of user's iCloud storage capacity.
 
-open class CloudSettings {
+public class CloudSettings {
     static let shared = CloudSettings()
     
     public var nowSyncing = false

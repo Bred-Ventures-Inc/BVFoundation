@@ -19,7 +19,7 @@ import Combine
 /// Storage capacity is 1MB, independent of user's iCloud storage capacity.
 
 public class CloudSettings {
-    static let shared = CloudSettings()
+    public static let shared = CloudSettings()
     
     public var nowSyncing = false
     

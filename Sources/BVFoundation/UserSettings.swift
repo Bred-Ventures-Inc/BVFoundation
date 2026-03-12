@@ -75,7 +75,7 @@ public class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
             syncBlock(key)
             Log.v("Detected storage update to \(key) -> \(wrappedValue)")
             
-            if sharedWithCloud {
+            if sharedWithCloud, #available(watchOS 9.0, iOS 15, *) {
                 CloudSettings.shared.pushToCloud(key: key)
             }
         } else {

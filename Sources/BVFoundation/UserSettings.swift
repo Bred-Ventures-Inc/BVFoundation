@@ -30,7 +30,7 @@ public class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
     private let syncBlock: (String) -> ()
     let sharedWithCloud: Bool
     
-    init(wrappedValue defaultValue: T,
+    public init(wrappedValue defaultValue: T,
          _ syncBlock: @escaping (String) -> () = { _ in },
          to setting: Key,
          cloud: Bool = false) {

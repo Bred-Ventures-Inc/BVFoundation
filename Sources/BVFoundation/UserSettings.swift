@@ -52,7 +52,13 @@ public class AppPersist<T: Codable, Key: UserDefaultsKey>: NSObject {
     
     public var wrappedValue: T {
         get { // Read directly using the userDefaults instance
-            guard let data = userDefaults.data(forKey: key) else { return defaultValue }
+            guard let data = userDefaults.data(forKey: key) else {
+                /// For compatibility: Prior builds may have stored the value directly without a Data encoding.
+                if let oldValue = userDefaults.object(forKey: key) as? T {
+                    return oldValue
+                }
+                return defaultValue
+            }
             let value = T.jsonDecode(from: data)
             return value ?? defaultValue
         }

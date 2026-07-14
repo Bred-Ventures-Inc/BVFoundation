@@ -23,6 +23,7 @@ public class CloudSettings {
     public static let shared = CloudSettings()
     
     public var nowSyncing = false
+    public var verboseMode: Bool = false
     
     internal var localStore: UserDefaults?
     internal var cloudStore: NSUbiquitousKeyValueStore {
@@ -31,11 +32,14 @@ public class CloudSettings {
     internal var retrievingFromCloud = false
     internal var listeners: Set<AnyCancellable> = []
 
-    public func startSyncing(localStore: UserDefaults = .standard) {
+    public func startSyncing(localStore: UserDefaults = .standard, verbose: Bool = false) {
         guard !nowSyncing else {return}
         nowSyncing = true
+        verboseMode = verbose
         self.localStore = localStore
-        Log.v("Starting sync for cloud user defaults.")
+        if verboseMode {
+            Log.v("Starting sync for cloud user defaults.")
+        }
         NotificationCenter.default.publisher(for: NSUbiquitousKeyValueStore.didChangeExternallyNotification)
             .sink { _ in self.notificationFromCloud() }
             .store(in: &listeners)
@@ -44,8 +48,10 @@ public class CloudSettings {
             Log.w("Cloud prefs sync error!")
         }
         notificationFromCloud()
-//        printStorageSizePerKey()
-//        Log.v("All Cloud settings set: \(cloudStore.dictionaryRepresentation)")
+        if verboseMode {
+            printStorageSizePerKey()
+//            Log.v("All Cloud settings set: \(cloudStore.dictionaryRepresentation)")
+        }
     }
     public func stopSyncing() {
         listeners.removeAll()
@@ -55,7 +61,9 @@ public class CloudSettings {
     internal func notificationFromCloud() {
         ///  Disable pushes to cloud while we set local values from cloud
         retrievingFromCloud = true
-        Log.v("Syncing to local store from cloud...")
+        if verboseMode {
+            Log.v("Syncing to local store from cloud...")
+        }
         
         let cloudPrefs = cloudStore.dictionaryRepresentation.enumerated()
         
@@ -72,22 +80,24 @@ public class CloudSettings {
         retrievingFromCloud = false
     }
 
-    func pushToCloud(key: String) {
+    public func pushToCloud(key: String) {
         guard nowSyncing, !retrievingFromCloud else {return}
         
         let prefValue = localStore?.value(forKey: key)
-        Log.v("Notifying cloud for setting update: \(key)")
+        if verboseMode {
+            Log.v("Notifying cloud for setting update: \(key)")
+        }
         cloudStore.set(prefValue, forKey: key)
     }
     
-//    private func printStorageSizePerKey() {
-//        for key in cloudStore.dictionaryRepresentation.keys {
-//            var totalSize = 0
-//            if let value = cloudStore.object(forKey: key) {
-//                let data = NSKeyedArchiver.archivedData(withRootObject: value)
-//                totalSize += data.count
-//            }
-//            Log.w("You are using \(totalSize) bytes of KV Cloud storage in key \(key)")
-//        }
-//    }
+    private func printStorageSizePerKey() {
+        for key in cloudStore.dictionaryRepresentation.keys {
+            var totalSize = 0
+            if let value = cloudStore.object(forKey: key) {
+                let data = NSKeyedArchiver.archivedData(withRootObject: value)
+                totalSize += data.count
+            }
+            Log.w("You are using \(totalSize) bytes of KV Cloud storage in key \(key)")
+        }
+    }
 }
